@@ -25,11 +25,15 @@ An interactive visualisation of the sun's path across the sky for any day, at an
 Solar geometry uses the simplified formulas commonly cited for everyday sun-position calculations:
 
 - **Declination** — `δ = −23.44° · cos((360°/365) · (N + 10))` where `N` is the day of the year.
-- **Sunrise/sunset hour angle** — `cos H = −tan(φ) · tan(δ)` where `φ` is the latitude. The two roots give sunrise (`12 − H/15`) and sunset (`12 + H/15`) in solar hours.
+- **Sunrise/sunset hour angle** — `cos H = −tan(φ) · tan(δ)` where `φ` is the latitude. The two roots give sunrise (`12 − H/15`) and sunset (`12 + H/15`) in apparent solar hours.
 - **Max elevation** — `90° − |φ − δ|`.
 - **Instantaneous altitude/azimuth** — derived from the local hour angle, latitude and declination via the standard horizontal-coordinate transform.
 
-Time-zone handling uses `Intl.DateTimeFormat` to read the current hour, minute and date directly in the city's IANA zone, so DST transitions are handled by the browser rather than ad-hoc offsets.
+Solar times are then converted to **clock time** in the city's time zone using:
+
+- **Longitude offset** — every degree east of the time zone's central meridian shifts the local apparent noon ~4 minutes earlier. Two cities sharing a time zone (like Helsinki and Kotka) have different sunrise/sunset clock times because they sit at different longitudes.
+- **Equation of time** — a sinusoidal correction (±~16 min over the year) that accounts for Earth's elliptical orbit and axial tilt.
+- **DST** — read live from the browser's `Intl.DateTimeFormat` so transitions are handled automatically.
 
 ## Run locally
 

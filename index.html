@@ -165,18 +165,19 @@
 <script>
 (function () {
   const presets = [
-    { name: 'Helsinki',   lat: 60.17, tz: 'Europe/Helsinki' },
-    { name: 'Kotka',      lat: 60.47, tz: 'Europe/Helsinki' },
-    { name: 'Siikajoki',  lat: 64.25, tz: 'Europe/Helsinki' },
-    { name: 'Narvik',     lat: 68.44, tz: 'Europe/Oslo' },
-    { name: 'Las Palmas', lat: 28.10, tz: 'Atlantic/Canary' },
-    { name: 'Shanghai',   lat: 31.23, tz: 'Asia/Shanghai' },
-    { name: 'London',     lat: 51.51, tz: 'Europe/London' },
+    { name: 'Helsinki',   lat: 60.17, lon:  24.94, tz: 'Europe/Helsinki' },
+    { name: 'Kotka',      lat: 60.47, lon:  26.95, tz: 'Europe/Helsinki' },
+    { name: 'Siikajoki',  lat: 64.25, lon:  24.83, tz: 'Europe/Helsinki' },
+    { name: 'Narvik',     lat: 68.44, lon:  17.43, tz: 'Europe/Oslo' },
+    { name: 'Las Palmas', lat: 28.10, lon: -15.43, tz: 'Atlantic/Canary' },
+    { name: 'Shanghai',   lat: 31.23, lon: 121.47, tz: 'Asia/Shanghai' },
+    { name: 'London',     lat: 51.51, lon:  -0.13, tz: 'Europe/London' },
   ];
 
   const state = {
     presetIdx: 0,
     lat: presets[0].lat,
+    lon: presets[0].lon,
     tz: presets[0].tz,
     dateOffset: 0,
     currentHour: 0,
@@ -221,6 +222,35 @@
     const cur = Date.UTC(p.year, p.month - 1, p.day);
     return Math.floor((cur - start) / 86400000) + 1;
   }
+  // UTC offset in hours for `tz` on a given Date (handles DST).
+  function tzOffsetHours(tz, d) {
+    const fmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+    const parts = {};
+    for (const p of fmt.formatToParts(d)) {
+      if (p.type !== 'literal') parts[p.type] = p.value;
+    }
+    const wallUTC = Date.UTC(
+      +parts.year, +parts.month - 1, +parts.day,
+      (+parts.hour) % 24, +parts.minute, +parts.second
+    );
+    return (wallUTC - d.getTime()) / 3600000;
+  }
+  // Equation of time, in minutes (apparent − mean solar time).
+  function equationOfTimeMinutes() {
+    const N = dayOfYearInTZ(state.tz, state.dateOffset);
+    const B = 2 * Math.PI * (N - 81) / 365;
+    return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  }
+  // Hours to add to apparent solar time to get clock time in the chosen zone.
+  function clockShift() {
+    const d = new Date(Date.now() + state.dateOffset * 86400000);
+    const off = tzOffsetHours(state.tz, d);
+    return (15 * off - state.lon) / 15 - equationOfTimeMinutes() / 60;
+  }
 
   // ─── Solar math ─────────────────────────────────────────────────────
   function declination() {
@@ -231,18 +261,20 @@
     const dec = declination() * Math.PI / 180;
     const latR = state.lat * Math.PI / 180;
     const cosH = -Math.tan(latR) * Math.tan(dec);
+    const shift = clockShift();
     if (cosH > 1)  return [-1, -1];
     if (cosH < -1) return [0, 24];
     const H = Math.acos(cosH) * 180 / Math.PI;
     const hours = H / 15;
-    return [12 - hours, 12 + hours];
+    return [12 - hours + shift, 12 + hours + shift];
   }
   function getMaxElevation() {
     return 90 - Math.abs(state.lat - declination());
   }
-  function getSunPosition(hour) {
+  function getSunPosition(clockHour) {
     const dec = declination();
-    const H = (hour - 12) * 15;
+    const solarHour = clockHour - clockShift();
+    const H = (solarHour - 12) * 15;
     const latR = state.lat * Math.PI / 180;
     const decR = dec * Math.PI / 180;
     const HR = H * Math.PI / 180;
@@ -509,6 +541,7 @@
     b.addEventListener('click', () => {
       state.presetIdx = i;
       state.lat = p.lat;
+      state.lon = p.lon;
       state.tz = p.tz;
       [...presetsEl.children].forEach((el, j) => el.classList.toggle('active', j === i));
       updateCurrentHour();
