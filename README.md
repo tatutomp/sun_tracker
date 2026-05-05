@@ -6,9 +6,11 @@ An interactive visualisation of the sun's path across the sky for any day, at an
 
 ## Features
 
-- **Five city presets** with correct latitudes and IANA time zones:
+- **Seven city presets** with correct latitudes and IANA time zones:
   - Helsinki (60.17°N, Europe/Helsinki)
+  - Kotka (60.47°N, Europe/Helsinki)
   - Siikajoki (64.25°N, Europe/Helsinki)
+  - Narvik (68.44°N, Europe/Oslo) — above the Arctic Circle, so polar day/night kicks in
   - Las Palmas (28.10°N, Atlantic/Canary)
   - Shanghai (31.23°N, Asia/Shanghai)
   - London (51.51°N, Europe/London)
