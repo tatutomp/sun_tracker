@@ -172,13 +172,14 @@
     { name: 'Las Palmas', lat: 28.10, lon: -15.43, tz: 'Atlantic/Canary' },
     { name: 'Shanghai',   lat: 31.23, lon: 121.47, tz: 'Asia/Shanghai' },
     { name: 'London',     lat: 51.51, lon:  -0.13, tz: 'Europe/London' },
+    { name: 'Kolkata',    lat: 22.57, lon:  88.36, tz: 'Asia/Kolkata' },
   ];
 
   const state = {
-    presetIdx: 0,
-    lat: presets[0].lat,
-    lon: presets[0].lon,
-    tz: presets[0].tz,
+    presetIdx: 7,
+    lat: presets[7].lat,
+    lon: presets[7].lon,
+    tz: presets[7].tz,
     dateOffset: 0,
     currentHour: 0,
     animTimer: null,
@@ -537,7 +538,7 @@
     const b = document.createElement('button');
     b.textContent = p.name;
     b.dataset.idx = String(i);
-    if (i === 0) b.classList.add('active');
+    if (i === state.presetIdx) b.classList.add('active');
     b.addEventListener('click', () => {
       state.presetIdx = i;
       state.lat = p.lat;
