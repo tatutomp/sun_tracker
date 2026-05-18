@@ -1,582 +1,650 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1a2744">
-<title>Sun Path Tracker</title>
-<style>
-  :root {
-    --bg: #1a2744;
-    --panel: #0d1520;
-    --canvas-bg: #0a1428;
-    --ink: #e0e8f0;
-    --soft: #aaccee;
-    --label: #88aacc;
-    --dim: #4a6a8a;
-    --btn: #1a2744;
-    --btn-accent: #1e3050;
-    --btn-active: #2a4060;
-    --pill-active-text: #b0d4f0;
-    --pill-bg: #141e30;
-    --grid-line: rgba(100, 180, 220, 0.3);
-    --arc: rgba(100, 180, 220, 0.25);
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -webkit-text-size-adjust: 100%;
-    color-scheme: dark;
-  }
-  .wrap {
-    max-width: 560px;
-    margin: 0 auto;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-  }
-  header .title { font-size: 18px; font-weight: 700; color: var(--ink); }
-  header .date { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1a2744">
+  <title>Sun Path Tracker</title>
+  <style>
+    :root {
+      --bg: #1a2744;
+      --panel: #0d1520;
+      --canvas-bg: #0a1428;
+      --ink: #e0e8f0;
+      --soft: #aaccee;
+      --label: #88aacc;
+      --dim: #4a6a8a;
+      --btn: #1a2744;
+      --btn-accent: #1e3050;
+      --btn-active: #2a4060;
+      --pill-active-text: #b0d4f0;
+      --pill-bg: #141e30;
+      --grid-line: rgba(100, 180, 220, 0.3);
+      --arc: rgba(100, 180, 220, 0.25);
+    }
 
-  .nav {
-    display: flex;
-    gap: 10px;
-    padding: 0 16px;
-    align-items: center;
-  }
-  .nav button {
-    appearance: none;
-    border: 0;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 12px;
-    background: var(--btn);
-    color: var(--soft);
-    cursor: pointer;
-  }
-  .nav button.accent { background: var(--btn-accent); color: #8ab4d0; }
-  .nav button:active { opacity: 0.7; }
-  .nav .spacer { flex: 1; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  .presets {
-    display: flex;
-    gap: 6px;
-    padding: 6px 16px 0;
-    flex-wrap: wrap;
-  }
-  .presets button {
-    appearance: none;
-    border: 0;
-    border-radius: 999px;
-    padding: 4px 12px;
-    font-size: 11px;
-    background: var(--pill-bg);
-    color: var(--dim);
-    cursor: pointer;
-  }
-  .presets button.active {
-    background: var(--btn-active);
-    color: var(--pill-active-text);
-  }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+      color-scheme: dark;
+    }
 
-  canvas {
-    display: block;
-    width: 100%;
-    height: 350px;
-    background: var(--canvas-bg);
-    margin-top: 6px;
-  }
+    .wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
 
-  .readout {
-    background: var(--panel);
-    padding: 10px 8px;
-  }
-  .readout-row {
-    display: flex;
-    margin-bottom: 6px;
-  }
-  .readout-row:last-child { margin-bottom: 0; }
-  .item {
-    flex: 1;
-    text-align: center;
-  }
-  .item .v {
-    font-size: 14px;
-    font-weight: 500;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    color: #fff;
-  }
-  .item .l {
-    font-size: 9px;
-    color: var(--label);
-    margin-top: 2px;
-    text-transform: none;
-  }
-</style>
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+    }
+
+    header .title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    header .date {
+      font-size: 13px;
+      color: var(--soft);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      align-items: center;
+    }
+
+    .nav button {
+      appearance: none;
+      border: 0;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      background: var(--btn);
+      color: var(--soft);
+      cursor: pointer;
+    }
+
+    .nav button.accent {
+      background: var(--btn-accent);
+      color: #8ab4d0;
+    }
+
+    .nav button:active {
+      opacity: 0.7;
+    }
+
+    .nav .spacer {
+      flex: 1;
+    }
+
+    .presets {
+      display: flex;
+      gap: 6px;
+      padding: 6px 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .presets button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11px;
+      background: var(--pill-bg);
+      color: var(--dim);
+      cursor: pointer;
+    }
+
+    .presets button.active {
+      background: var(--btn-active);
+      color: var(--pill-active-text);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 350px;
+      background: var(--canvas-bg);
+      margin-top: 6px;
+    }
+
+    .readout {
+      background: var(--panel);
+      padding: 10px 8px;
+    }
+
+    .readout-row {
+      display: flex;
+      margin-bottom: 6px;
+    }
+
+    .readout-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .item .v {
+      font-size: 14px;
+      font-weight: 500;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      color: #fff;
+    }
+
+    .item .l {
+      font-size: 9px;
+      color: var(--label);
+      margin-top: 2px;
+      text-transform: none;
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <header>
-    <div class="title">Sun Path Tracker</div>
-    <div class="date" id="dateLbl"></div>
-  </header>
+  <div class="wrap">
+    <header>
+      <div class="title">Sun Path Tracker</div>
+      <div class="date" id="dateLbl"></div>
+    </header>
 
-  <div class="nav">
-    <button id="prevDay">&lt; Day</button>
-    <button id="today" class="accent">Today</button>
-    <button id="nextDay">Day &gt;</button>
-    <div class="spacer"></div>
-    <button id="now" class="accent">Now</button>
+    <div class="nav">
+      <button id="prevDay">&lt; Day</button>
+      <button id="today" class="accent">Today</button>
+      <button id="nextDay">Day &gt;</button>
+      <div class="spacer"></div>
+      <button id="now" class="accent">Now</button>
+    </div>
+
+    <div class="presets" id="presets"></div>
+
+    <canvas id="sky"></canvas>
+
+    <div class="readout">
+      <div class="readout-row">
+        <div class="item">
+          <div class="v" id="srVal">--:--</div>
+          <div class="l">Sunrise</div>
+        </div>
+        <div class="item">
+          <div class="v">12:00</div>
+          <div class="l">Solar Noon</div>
+        </div>
+        <div class="item">
+          <div class="v" id="ssVal">--:--</div>
+          <div class="l">Sunset</div>
+        </div>
+      </div>
+      <div class="readout-row">
+        <div class="item">
+          <div class="v" id="elevVal">--</div>
+          <div class="l">Elevation</div>
+        </div>
+        <div class="item">
+          <div class="v" id="azVal">--</div>
+          <div class="l">Azimuth</div>
+        </div>
+        <div class="item">
+          <div class="v" id="maxElevVal">--</div>
+          <div class="l">Max Elev</div>
+        </div>
+      </div>
+      <div class="readout-row">
+        <div class="item">
+          <div class="v" id="dayLenVal">--:--</div>
+          <div class="l">Day Length</div>
+        </div>
+        <div class="item">
+          <div class="v" id="latVal">--</div>
+          <div class="l">Latitude</div>
+        </div>
+        <div class="item">
+          <div class="v" id="timeVal">--:--</div>
+          <div class="l">Time</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="presets" id="presets"></div>
+  <script>
+    (function () {
+      const presets = [
+        { name: 'Salo', lat: 60.38, lon: 23.13, tz: 'Europe/Helsinki' },
+        { name: 'Helsinki', lat: 60.17, lon: 24.94, tz: 'Europe/Helsinki' },
+        { name: 'Siikajoki', lat: 64.25, lon: 24.83, tz: 'Europe/Helsinki' },
+        { name: 'Narvik', lat: 68.44, lon: 17.43, tz: 'Europe/Oslo' },
+        { name: 'Las Palmas', lat: 28.10, lon: -15.43, tz: 'Atlantic/Canary' },
+        { name: 'Shanghai', lat: 31.23, lon: 121.47, tz: 'Asia/Shanghai' },
+        { name: 'London', lat: 51.51, lon: -0.13, tz: 'Europe/London' },
+        { name: 'Kolkata', lat: 22.57, lon: 88.36, tz: 'Asia/Kolkata' },
+      ];
 
-  <canvas id="sky"></canvas>
+      const state = {
+        presetIdx: 1,
+        lat: presets[1].lat,
+        lon: presets[1].lon,
+        tz: presets[1].tz,
+        dateOffset: 0,
+        currentHour: 0,
+        animTimer: null,
+      };
 
-  <div class="readout">
-    <div class="readout-row">
-      <div class="item"><div class="v" id="srVal">--:--</div><div class="l">Sunrise</div></div>
-      <div class="item"><div class="v">12:00</div><div class="l">Solar Noon</div></div>
-      <div class="item"><div class="v" id="ssVal">--:--</div><div class="l">Sunset</div></div>
-    </div>
-    <div class="readout-row">
-      <div class="item"><div class="v" id="elevVal">--</div><div class="l">Elevation</div></div>
-      <div class="item"><div class="v" id="azVal">--</div><div class="l">Azimuth</div></div>
-      <div class="item"><div class="v" id="maxElevVal">--</div><div class="l">Max Elev</div></div>
-    </div>
-    <div class="readout-row">
-      <div class="item"><div class="v" id="dayLenVal">--:--</div><div class="l">Day Length</div></div>
-      <div class="item"><div class="v" id="latVal">--</div><div class="l">Latitude</div></div>
-      <div class="item"><div class="v" id="timeVal">--:--</div><div class="l">Time</div></div>
-    </div>
-  </div>
-</div>
+      const $ = (id) => document.getElementById(id);
 
-<script>
-(function () {
-  const presets = [
-    { name: 'Helsinki',   lat: 60.17, lon:  24.94, tz: 'Europe/Helsinki' },
-    { name: 'Kotka',      lat: 60.47, lon:  26.95, tz: 'Europe/Helsinki' },
-    { name: 'Siikajoki',  lat: 64.25, lon:  24.83, tz: 'Europe/Helsinki' },
-    { name: 'Narvik',     lat: 68.44, lon:  17.43, tz: 'Europe/Oslo' },
-    { name: 'Las Palmas', lat: 28.10, lon: -15.43, tz: 'Atlantic/Canary' },
-    { name: 'Shanghai',   lat: 31.23, lon: 121.47, tz: 'Asia/Shanghai' },
-    { name: 'London',     lat: 51.51, lon:  -0.13, tz: 'Europe/London' },
-    { name: 'Kolkata',    lat: 22.57, lon:  88.36, tz: 'Asia/Kolkata' },
-  ];
-
-  const state = {
-    presetIdx: 7,
-    lat: presets[7].lat,
-    lon: presets[7].lon,
-    tz: presets[7].tz,
-    dateOffset: 0,
-    currentHour: 0,
-    animTimer: null,
-  };
-
-  const $ = (id) => document.getElementById(id);
-
-  // ─── Time-zone helpers ──────────────────────────────────────────────
-  function tzParts(tz, dayOffset) {
-    const d = new Date(Date.now() + (dayOffset || 0) * 86400000);
-    const fmt = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', hour12: false,
-    });
-    const parts = {};
-    for (const p of fmt.formatToParts(d)) {
-      if (p.type !== 'literal') parts[p.type] = p.value;
-    }
-    let hh = parseInt(parts.hour, 10);
-    if (hh === 24) hh = 0;
-    return {
-      year: parseInt(parts.year, 10),
-      month: parseInt(parts.month, 10),
-      day: parseInt(parts.day, 10),
-      hour: hh,
-      minute: parseInt(parts.minute, 10),
-    };
-  }
-  function hourInTZ(tz) {
-    const p = tzParts(tz, 0);
-    return p.hour + p.minute / 60;
-  }
-  function dateStrInTZ(tz, dayOffset) {
-    const p = tzParts(tz, dayOffset);
-    return `${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`;
-  }
-  function dayOfYearInTZ(tz, dayOffset) {
-    const p = tzParts(tz, dayOffset);
-    const start = Date.UTC(p.year, 0, 1);
-    const cur = Date.UTC(p.year, p.month - 1, p.day);
-    return Math.floor((cur - start) / 86400000) + 1;
-  }
-  // UTC offset in hours for `tz` on a given Date (handles DST).
-  function tzOffsetHours(tz, d) {
-    const fmt = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz, hour12: false,
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-    });
-    const parts = {};
-    for (const p of fmt.formatToParts(d)) {
-      if (p.type !== 'literal') parts[p.type] = p.value;
-    }
-    const wallUTC = Date.UTC(
-      +parts.year, +parts.month - 1, +parts.day,
-      (+parts.hour) % 24, +parts.minute, +parts.second
-    );
-    return (wallUTC - d.getTime()) / 3600000;
-  }
-  // Equation of time, in minutes (apparent − mean solar time).
-  function equationOfTimeMinutes() {
-    const N = dayOfYearInTZ(state.tz, state.dateOffset);
-    const B = 2 * Math.PI * (N - 81) / 365;
-    return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
-  }
-  // Hours to add to apparent solar time to get clock time in the chosen zone.
-  function clockShift() {
-    const d = new Date(Date.now() + state.dateOffset * 86400000);
-    const off = tzOffsetHours(state.tz, d);
-    return (15 * off - state.lon) / 15 - equationOfTimeMinutes() / 60;
-  }
-
-  // ─── Solar math ─────────────────────────────────────────────────────
-  function declination() {
-    const N = dayOfYearInTZ(state.tz, state.dateOffset);
-    return -23.44 * Math.cos((360 / 365) * (N + 10) * Math.PI / 180);
-  }
-  function getSunTimes() {
-    const dec = declination() * Math.PI / 180;
-    const latR = state.lat * Math.PI / 180;
-    const cosH = -Math.tan(latR) * Math.tan(dec);
-    const shift = clockShift();
-    if (cosH > 1)  return [-1, -1];
-    if (cosH < -1) return [0, 24];
-    const H = Math.acos(cosH) * 180 / Math.PI;
-    const hours = H / 15;
-    return [12 - hours + shift, 12 + hours + shift];
-  }
-  function getMaxElevation() {
-    return 90 - Math.abs(state.lat - declination());
-  }
-  function getSunPosition(clockHour) {
-    const dec = declination();
-    const solarHour = clockHour - clockShift();
-    const H = (solarHour - 12) * 15;
-    const latR = state.lat * Math.PI / 180;
-    const decR = dec * Math.PI / 180;
-    const HR = H * Math.PI / 180;
-    const sinAlt = Math.sin(latR) * Math.sin(decR) + Math.cos(latR) * Math.cos(decR) * Math.cos(HR);
-    const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt))) * 180 / Math.PI;
-    const cosAz = (Math.sin(decR) - Math.sin(alt * Math.PI / 180) * Math.sin(latR)) / (Math.cos(alt * Math.PI / 180) * Math.cos(latR));
-    let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) * 180 / Math.PI;
-    if (H > 0) az = 360 - az;
-    return [alt, az];
-  }
-  function fmtTime(h) {
-    if (h < 0) return '--:--';
-    let hh = Math.floor(h);
-    let mm = Math.round((h - hh) * 60);
-    if (mm === 60) { hh += 1; mm = 0; }
-    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
-  }
-  function fmtAzCardinal(az) {
-    const cards = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    return cards[Math.round(az / 22.5) % 16];
-  }
-
-  // ─── Canvas drawing ─────────────────────────────────────────────────
-  const canvas = $('sky');
-  const ctx = canvas.getContext('2d');
-
-  function fitCanvas() {
-    const dpr = window.devicePixelRatio || 1;
-    const cssW = canvas.clientWidth;
-    const cssH = canvas.clientHeight;
-    canvas.width = Math.round(cssW * dpr);
-    canvas.height = Math.round(cssH * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function drawScene() {
-    fitCanvas();
-    const W = canvas.clientWidth;
-    const H = canvas.clientHeight;
-    const sunMaxRadius = 26;
-    const topPadding = 8;
-    const sidePadding = 8;
-
-    const [sr, ss] = getSunTimes();
-    const maxElev = getMaxElevation();
-    const [elevation] = getSunPosition(state.currentHour);
-
-    // Sky gradient
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, '#0a1428');
-    sky.addColorStop(0.6, '#0e1a33');
-    sky.addColorStop(1, '#1a2744');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
-
-    // Stars
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    for (let i = 0; i < 40; i++) {
-      const sx = ((i * 73 + 17) % Math.max(1, Math.floor(W)));
-      const sy = ((i * 41 + 7) % Math.max(1, Math.floor(H * 0.5)));
-      const starR = 0.5 + (i % 3) * 0.5;
-      ctx.beginPath();
-      ctx.arc(sx, sy, starR, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const elevClamp = Math.max(0, Math.min(90, maxElev));
-    const arcRawHeight = H * 0.08 + (elevClamp / 90) * H * 0.45;
-    const maxArcHeight = Math.max(0, (H * 0.75) - (sunMaxRadius + topPadding));
-    const arcHeight = Math.min(arcRawHeight, maxArcHeight);
-    const arcRawWidth = W * 0.28 + (elevClamp / 90) * W * 0.35;
-    const maxArcWidth = Math.max(0, W / 2 - (sunMaxRadius + sidePadding));
-    const arcWidth = Math.min(arcRawWidth, maxArcWidth);
-
-    const horizonY = H * 0.75;
-    const cx = W / 2;
-
-    // Arc
-    if (sr >= 0) {
-      ctx.strokeStyle = 'rgba(100,180,220,0.25)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const theta = i / 100 * Math.PI;
-        const x = cx - arcWidth * Math.cos(theta);
-        const y = horizonY - arcHeight * Math.sin(theta);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      // ─── Time-zone helpers ──────────────────────────────────────────────
+      function tzParts(tz, dayOffset) {
+        const d = new Date(Date.now() + (dayOffset || 0) * 86400000);
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+          timeZone: tz,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', hour12: false,
+        });
+        const parts = {};
+        for (const p of fmt.formatToParts(d)) {
+          if (p.type !== 'literal') parts[p.type] = p.value;
+        }
+        let hh = parseInt(parts.hour, 10);
+        if (hh === 24) hh = 0;
+        return {
+          year: parseInt(parts.year, 10),
+          month: parseInt(parts.month, 10),
+          day: parseInt(parts.day, 10),
+          hour: hh,
+          minute: parseInt(parts.minute, 10),
+        };
       }
-      ctx.stroke();
-      ctx.setLineDash([]);
+      function hourInTZ(tz) {
+        const p = tzParts(tz, 0);
+        return p.hour + p.minute / 60;
+      }
+      function dateStrInTZ(tz, dayOffset) {
+        const p = tzParts(tz, dayOffset);
+        return `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
+      }
+      function dayOfYearInTZ(tz, dayOffset) {
+        const p = tzParts(tz, dayOffset);
+        const start = Date.UTC(p.year, 0, 1);
+        const cur = Date.UTC(p.year, p.month - 1, p.day);
+        return Math.floor((cur - start) / 86400000) + 1;
+      }
+      // UTC offset in hours for `tz` on a given Date (handles DST).
+      function tzOffsetHours(tz, d) {
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+          timeZone: tz, hour12: false,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+        });
+        const parts = {};
+        for (const p of fmt.formatToParts(d)) {
+          if (p.type !== 'literal') parts[p.type] = p.value;
+        }
+        const wallUTC = Date.UTC(
+          +parts.year, +parts.month - 1, +parts.day,
+          (+parts.hour) % 24, +parts.minute, +parts.second
+        );
+        return (wallUTC - d.getTime()) / 3600000;
+      }
+      // Equation of time, in minutes (apparent − mean solar time).
+      function equationOfTimeMinutes() {
+        const N = dayOfYearInTZ(state.tz, state.dateOffset);
+        const B = 2 * Math.PI * (N - 81) / 365;
+        return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+      }
+      // Hours to add to apparent solar time to get clock time in the chosen zone.
+      function clockShift() {
+        const d = new Date(Date.now() + state.dateOffset * 86400000);
+        const off = tzOffsetHours(state.tz, d);
+        return (15 * off - state.lon) / 15 - equationOfTimeMinutes() / 60;
+      }
 
-      // Hour ticks
-      if (ss > sr && sr >= 0) {
-        const startH = Math.max(0, Math.ceil(sr));
-        const endH = Math.min(24, Math.floor(ss));
-        ctx.fillStyle = 'rgba(150,210,250,0.5)';
-        for (let h = startH; h <= endH; h++) {
-          const t = (h - sr) / (ss - sr);
-          const theta = t * Math.PI;
-          const x = cx - arcWidth * Math.cos(theta);
-          const y = horizonY - arcHeight * Math.sin(theta);
+      // ─── Solar math ─────────────────────────────────────────────────────
+      function declination() {
+        const N = dayOfYearInTZ(state.tz, state.dateOffset);
+        return -23.44 * Math.cos((360 / 365) * (N + 10) * Math.PI / 180);
+      }
+      function getSunTimes() {
+        const dec = declination() * Math.PI / 180;
+        const latR = state.lat * Math.PI / 180;
+        const cosH = -Math.tan(latR) * Math.tan(dec);
+        const shift = clockShift();
+        if (cosH > 1) return [-1, -1];
+        if (cosH < -1) return [0, 24];
+        const H = Math.acos(cosH) * 180 / Math.PI;
+        const hours = H / 15;
+        return [12 - hours + shift, 12 + hours + shift];
+      }
+      function getMaxElevation() {
+        return 90 - Math.abs(state.lat - declination());
+      }
+      function getSunPosition(clockHour) {
+        const dec = declination();
+        const solarHour = clockHour - clockShift();
+        const H = (solarHour - 12) * 15;
+        const latR = state.lat * Math.PI / 180;
+        const decR = dec * Math.PI / 180;
+        const HR = H * Math.PI / 180;
+        const sinAlt = Math.sin(latR) * Math.sin(decR) + Math.cos(latR) * Math.cos(decR) * Math.cos(HR);
+        const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt))) * 180 / Math.PI;
+        const cosAz = (Math.sin(decR) - Math.sin(alt * Math.PI / 180) * Math.sin(latR)) / (Math.cos(alt * Math.PI / 180) * Math.cos(latR));
+        let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) * 180 / Math.PI;
+        if (H > 0) az = 360 - az;
+        return [alt, az];
+      }
+      function fmtTime(h) {
+        if (h < 0) return '--:--';
+        let hh = Math.floor(h);
+        let mm = Math.round((h - hh) * 60);
+        if (mm === 60) { hh += 1; mm = 0; }
+        return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+      }
+      function fmtAzCardinal(az) {
+        const cards = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        return cards[Math.round(az / 22.5) % 16];
+      }
+
+      // ─── Canvas drawing ─────────────────────────────────────────────────
+      const canvas = $('sky');
+      const ctx = canvas.getContext('2d');
+
+      function fitCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const cssW = canvas.clientWidth;
+        const cssH = canvas.clientHeight;
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function drawScene() {
+        fitCanvas();
+        const W = canvas.clientWidth;
+        const H = canvas.clientHeight;
+        const sunMaxRadius = 26;
+        const topPadding = 8;
+        const sidePadding = 8;
+
+        const [sr, ss] = getSunTimes();
+        const maxElev = getMaxElevation();
+        const [elevation] = getSunPosition(state.currentHour);
+
+        // Sky gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#0a1428');
+        sky.addColorStop(0.6, '#0e1a33');
+        sky.addColorStop(1, '#1a2744');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+
+        // Stars
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        for (let i = 0; i < 40; i++) {
+          const sx = ((i * 73 + 17) % Math.max(1, Math.floor(W)));
+          const sy = ((i * 41 + 7) % Math.max(1, Math.floor(H * 0.5)));
+          const starR = 0.5 + (i % 3) * 0.5;
           ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.arc(sx, sy, starR, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        const elevClamp = Math.max(0, Math.min(90, maxElev));
+        const arcRawHeight = H * 0.08 + (elevClamp / 90) * H * 0.45;
+        const maxArcHeight = Math.max(0, (H * 0.75) - (sunMaxRadius + topPadding));
+        const arcHeight = Math.min(arcRawHeight, maxArcHeight);
+        const arcRawWidth = W * 0.28 + (elevClamp / 90) * W * 0.35;
+        const maxArcWidth = Math.max(0, W / 2 - (sunMaxRadius + sidePadding));
+        const arcWidth = Math.min(arcRawWidth, maxArcWidth);
+
+        const horizonY = H * 0.75;
+        const cx = W / 2;
+
+        // Arc
+        if (sr >= 0) {
+          ctx.strokeStyle = 'rgba(100,180,220,0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          for (let i = 0; i <= 100; i++) {
+            const theta = i / 100 * Math.PI;
+            const x = cx - arcWidth * Math.cos(theta);
+            const y = horizonY - arcHeight * Math.sin(theta);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Hour ticks
+          if (ss > sr && sr >= 0) {
+            const startH = Math.max(0, Math.ceil(sr));
+            const endH = Math.min(24, Math.floor(ss));
+            ctx.fillStyle = 'rgba(150,210,250,0.5)';
+            for (let h = startH; h <= endH; h++) {
+              const t = (h - sr) / (ss - sr);
+              const theta = t * Math.PI;
+              const x = cx - arcWidth * Math.cos(theta);
+              const y = horizonY - arcHeight * Math.sin(theta);
+              ctx.beginPath();
+              ctx.arc(x, y, 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+
+        // Horizon line
+        ctx.strokeStyle = 'rgba(100,180,220,0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, horizonY);
+        ctx.lineTo(W, horizonY);
+        ctx.stroke();
+
+        // Skyline silhouette (scaled to W relative to a 360px reference)
+        const skylinePoints = [
+          [40, 0], [50, -12], [70, -8], [80, -22], [85, -30], [90, -22],
+          [100, -8], [120, -10], [150, -8], [155, -38], [158, -42], [161, -38],
+          [165, -8], [190, -6], [195, -12], [215, -12], [220, -6], [250, -5],
+          [260, -15], [280, -15], [285, -5], [320, -10], [340, -10], [350, -4],
+        ];
+        const sx = W / 360;
+        ctx.fillStyle = '#0d1520';
+        ctx.beginPath();
+        ctx.moveTo(0, horizonY);
+        for (const [x, dy] of skylinePoints) ctx.lineTo(x * sx, horizonY + dy);
+        ctx.lineTo(W, horizonY);
+        ctx.lineTo(W, H);
+        ctx.lineTo(0, H);
+        ctx.closePath();
+        ctx.fill();
+
+        // Ground
+        const ground = ctx.createLinearGradient(0, horizonY, 0, H);
+        ground.addColorStop(0, '#0d1520');
+        ground.addColorStop(1, '#080e18');
+        ctx.fillStyle = ground;
+        ctx.fillRect(0, horizonY + 1, W, H - horizonY);
+
+        // Sun
+        if (sr >= 0 && state.currentHour >= sr && state.currentHour <= ss) {
+          const t = (state.currentHour - sr) / (ss - sr);
+          const theta = t * Math.PI;
+          const sunX = cx - arcWidth * Math.cos(theta);
+          const sunY = horizonY - arcHeight * Math.sin(theta);
+          const elevNorm = Math.max(0, Math.min(1, elevation / Math.max(maxElev, 1)));
+          const r = 255;
+          const g = 120 + elevNorm * 120;
+          const b = 20 + elevNorm * 180;
+          const sunRGB = `${Math.round(r)},${Math.round(g)},${Math.round(b)}`;
+
+          // Glow
+          const glowR = 60 + elevNorm * 40;
+          const glow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, glowR);
+          glow.addColorStop(0, `rgba(${sunRGB},0.6)`);
+          glow.addColorStop(0.5, `rgba(${sunRGB},0.15)`);
+          glow.addColorStop(1, `rgba(${sunRGB},0)`);
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(sunX, sunY, glowR, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sun disk
+          const sunRadius = 18 + elevNorm * 8;
+          ctx.fillStyle = `rgb(${sunRGB})`;
+          ctx.beginPath();
+          ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          const coreR = 8 + elevNorm * 5;
+          ctx.fillStyle = `rgb(${Math.min(r + 20, 255)},${Math.min(g + 40, 255)},${Math.min(b + 60, 255)})`;
+          ctx.beginPath();
+          ctx.arc(sunX, sunY, coreR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Max elevation label
+        if (maxElev > 0) {
+          const peakY = horizonY - arcHeight;
+          ctx.strokeStyle = 'rgba(100,180,220,0.2)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(cx - 25, peakY);
+          ctx.lineTo(cx + 25, peakY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = 'rgba(220,240,255,0.95)';
+          ctx.font = 'bold 14px -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(maxElev.toFixed(1) + '°', cx, peakY - 42);
+        }
+
+        // Compass labels
+        ctx.fillStyle = 'rgba(100,180,220,0.3)';
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        ctx.fillText('E', 12, horizonY - 6);
+        ctx.textAlign = 'right';
+        ctx.fillText('W', W - 12, horizonY - 6);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('S', cx, horizonY + 8);
       }
-    }
 
-    // Horizon line
-    ctx.strokeStyle = 'rgba(100,180,220,0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY);
-    ctx.lineTo(W, horizonY);
-    ctx.stroke();
+      // ─── Render ────────────────────────────────────────────────────────
+      function render() {
+        $('dateLbl').textContent = dateStrInTZ(state.tz, state.dateOffset);
 
-    // Skyline silhouette (scaled to W relative to a 360px reference)
-    const skylinePoints = [
-      [40, 0], [50, -12], [70, -8], [80, -22], [85, -30], [90, -22],
-      [100, -8], [120, -10], [150, -8], [155, -38], [158, -42], [161, -38],
-      [165, -8], [190, -6], [195, -12], [215, -12], [220, -6], [250, -5],
-      [260, -15], [280, -15], [285, -5], [320, -10], [340, -10], [350, -4],
-    ];
-    const sx = W / 360;
-    ctx.fillStyle = '#0d1520';
-    ctx.beginPath();
-    ctx.moveTo(0, horizonY);
-    for (const [x, dy] of skylinePoints) ctx.lineTo(x * sx, horizonY + dy);
-    ctx.lineTo(W, horizonY);
-    ctx.lineTo(W, H);
-    ctx.lineTo(0, H);
-    ctx.closePath();
-    ctx.fill();
+        const [sr, ss] = getSunTimes();
+        const [alt, az] = getSunPosition(state.currentHour);
+        const maxElev = getMaxElevation();
+        const dayLen = (ss > sr && sr >= 0) ? ss - sr : 0;
 
-    // Ground
-    const ground = ctx.createLinearGradient(0, horizonY, 0, H);
-    ground.addColorStop(0, '#0d1520');
-    ground.addColorStop(1, '#080e18');
-    ctx.fillStyle = ground;
-    ctx.fillRect(0, horizonY + 1, W, H - horizonY);
+        $('srVal').textContent = fmtTime(sr);
+        $('ssVal').textContent = fmtTime(ss);
+        $('elevVal').textContent = alt.toFixed(1) + '°';
+        $('azVal').textContent = az.toFixed(1) + '° ' + fmtAzCardinal(az);
+        $('maxElevVal').textContent = maxElev.toFixed(1) + '°';
+        $('dayLenVal').textContent = fmtTime(dayLen);
+        $('latVal').textContent = state.lat.toFixed(2) + '°';
+        $('timeVal').textContent = fmtTime(state.currentHour);
 
-    // Sun
-    if (sr >= 0 && state.currentHour >= sr && state.currentHour <= ss) {
-      const t = (state.currentHour - sr) / (ss - sr);
-      const theta = t * Math.PI;
-      const sunX = cx - arcWidth * Math.cos(theta);
-      const sunY = horizonY - arcHeight * Math.sin(theta);
-      const elevNorm = Math.max(0, Math.min(1, elevation / Math.max(maxElev, 1)));
-      const r = 255;
-      const g = 120 + elevNorm * 120;
-      const b = 20 + elevNorm * 180;
-      const sunRGB = `${Math.round(r)},${Math.round(g)},${Math.round(b)}`;
-
-      // Glow
-      const glowR = 60 + elevNorm * 40;
-      const glow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, glowR);
-      glow.addColorStop(0,    `rgba(${sunRGB},0.6)`);
-      glow.addColorStop(0.5,  `rgba(${sunRGB},0.15)`);
-      glow.addColorStop(1,    `rgba(${sunRGB},0)`);
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, glowR, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Sun disk
-      const sunRadius = 18 + elevNorm * 8;
-      ctx.fillStyle = `rgb(${sunRGB})`;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Core
-      const coreR = 8 + elevNorm * 5;
-      ctx.fillStyle = `rgb(${Math.min(r + 20, 255)},${Math.min(g + 40, 255)},${Math.min(b + 60, 255)})`;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, coreR, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Max elevation label
-    if (maxElev > 0) {
-      const peakY = horizonY - arcHeight;
-      ctx.strokeStyle = 'rgba(100,180,220,0.2)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 4]);
-      ctx.beginPath();
-      ctx.moveTo(cx - 25, peakY);
-      ctx.lineTo(cx + 25, peakY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.fillStyle = 'rgba(220,240,255,0.95)';
-      ctx.font = 'bold 14px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(maxElev.toFixed(1) + '°', cx, peakY - 42);
-    }
-
-    // Compass labels
-    ctx.fillStyle = 'rgba(100,180,220,0.3)';
-    ctx.font = '10px -apple-system, sans-serif';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'left';
-    ctx.fillText('E', 12, horizonY - 6);
-    ctx.textAlign = 'right';
-    ctx.fillText('W', W - 12, horizonY - 6);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('S', cx, horizonY + 8);
-  }
-
-  // ─── Render ────────────────────────────────────────────────────────
-  function render() {
-    $('dateLbl').textContent = dateStrInTZ(state.tz, state.dateOffset);
-
-    const [sr, ss] = getSunTimes();
-    const [alt, az] = getSunPosition(state.currentHour);
-    const maxElev = getMaxElevation();
-    const dayLen = (ss > sr && sr >= 0) ? ss - sr : 0;
-
-    $('srVal').textContent = fmtTime(sr);
-    $('ssVal').textContent = fmtTime(ss);
-    $('elevVal').textContent = alt.toFixed(1) + '°';
-    $('azVal').textContent = az.toFixed(1) + '° ' + fmtAzCardinal(az);
-    $('maxElevVal').textContent = maxElev.toFixed(1) + '°';
-    $('dayLenVal').textContent = fmtTime(dayLen);
-    $('latVal').textContent = state.lat.toFixed(2) + '°';
-    $('timeVal').textContent = fmtTime(state.currentHour);
-
-    drawScene();
-  }
-
-  function updateCurrentHour() {
-    state.currentHour = hourInTZ(state.tz);
-  }
-
-  function startAnimation() {
-    if (state.animTimer) { clearInterval(state.animTimer); state.animTimer = null; }
-    const [sr] = getSunTimes();
-    if (sr < 0) return;
-    const target = hourInTZ(state.tz);
-    state.currentHour = sr;
-
-    state.animTimer = setInterval(() => {
-      state.currentHour += 0.05;
-      if (state.currentHour >= target) {
-        state.currentHour = target;
-        clearInterval(state.animTimer);
-        state.animTimer = null;
+        drawScene();
       }
-      render();
-    }, 1000 / 60);
-  }
 
-  // ─── Wire UI ───────────────────────────────────────────────────────
-  // Presets
-  const presetsEl = $('presets');
-  presets.forEach((p, i) => {
-    const b = document.createElement('button');
-    b.textContent = p.name;
-    b.dataset.idx = String(i);
-    if (i === state.presetIdx) b.classList.add('active');
-    b.addEventListener('click', () => {
-      state.presetIdx = i;
-      state.lat = p.lat;
-      state.lon = p.lon;
-      state.tz = p.tz;
-      [...presetsEl.children].forEach((el, j) => el.classList.toggle('active', j === i));
+      function updateCurrentHour() {
+        state.currentHour = hourInTZ(state.tz);
+      }
+
+      function startAnimation() {
+        if (state.animTimer) { clearInterval(state.animTimer); state.animTimer = null; }
+        const [sr] = getSunTimes();
+        if (sr < 0) return;
+        const target = hourInTZ(state.tz);
+        state.currentHour = sr;
+
+        state.animTimer = setInterval(() => {
+          state.currentHour += 0.05;
+          if (state.currentHour >= target) {
+            state.currentHour = target;
+            clearInterval(state.animTimer);
+            state.animTimer = null;
+          }
+          render();
+        }, 1000 / 60);
+      }
+
+      // ─── Wire UI ───────────────────────────────────────────────────────
+      // Presets
+      const presetsEl = $('presets');
+      presets.forEach((p, i) => {
+        const b = document.createElement('button');
+        b.textContent = p.name;
+        b.dataset.idx = String(i);
+        if (i === state.presetIdx) b.classList.add('active');
+        b.addEventListener('click', () => {
+          state.presetIdx = i;
+          state.lat = p.lat;
+          state.lon = p.lon;
+          state.tz = p.tz;
+          [...presetsEl.children].forEach((el, j) => el.classList.toggle('active', j === i));
+          updateCurrentHour();
+          render();
+        });
+        presetsEl.appendChild(b);
+      });
+
+      $('prevDay').addEventListener('click', () => {
+        state.dateOffset -= 1;
+        updateCurrentHour();
+        render();
+      });
+      $('today').addEventListener('click', () => {
+        state.dateOffset = 0;
+        updateCurrentHour();
+        render();
+      });
+      $('nextDay').addEventListener('click', () => {
+        state.dateOffset += 1;
+        updateCurrentHour();
+        render();
+      });
+      $('now').addEventListener('click', () => {
+        state.dateOffset = 0;
+        startAnimation();
+      });
+
+      window.addEventListener('resize', render);
+
+      // Init
       updateCurrentHour();
       render();
-    });
-    presetsEl.appendChild(b);
-  });
-
-  $('prevDay').addEventListener('click', () => {
-    state.dateOffset -= 1;
-    updateCurrentHour();
-    render();
-  });
-  $('today').addEventListener('click', () => {
-    state.dateOffset = 0;
-    updateCurrentHour();
-    render();
-  });
-  $('nextDay').addEventListener('click', () => {
-    state.dateOffset += 1;
-    updateCurrentHour();
-    render();
-  });
-  $('now').addEventListener('click', () => {
-    state.dateOffset = 0;
-    startAnimation();
-  });
-
-  window.addEventListener('resize', render);
-
-  // Init
-  updateCurrentHour();
-  render();
-})();
-</script>
+    })();
+  </script>
 </body>
+
 </html>
